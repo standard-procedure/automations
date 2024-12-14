@@ -69,7 +69,7 @@ config = {
 Use the `Automations` module to build your automation from a config.  Then `call` the automation with the relevant parameters.
 
 ```ruby
-@config = {
+config = {
   name: "Sequence of actions",
   class_name: "Automations::TriggerDoesFire",
   configuration: {},
@@ -78,11 +78,28 @@ Use the `Automations` module to build your automation from a config.  Then `call
     {class_name: "Automations::AddsSecond", configuration: {}}
   ]
 }
-@automation = Automations.create(@config)
-@result = @automation.call name: "Alice"
+automation = Automations.create(config)
+result = automation.call name: "Alice"
 ```
 
 If the trigger does not fire, then `@result` will be an empty `Hash`, otherwise it will be the combination of the incoming parameters, merged with the outputs of each `action` that was `call`ed.  If an action raises an exception, you will need to handle that yourself.
+
+### Built-in triggers
+
+There are some built-in triggers available to you, useful for automations that are triggered on a schedule.
+
+These are the [DailySchedule](spec/automations/daily_schedule_spec.rb), [WeeklySchedule](spec/automations/weekly_schedule_spec.rb), [MonthlySchedule](spec/automations/monthly_schedule_spec.rb) and [AnnualSchedule](spec/automations/annual_schedule_spec.rb).
+
+The simplest way to use these is to have a `cron job` that triggers a `rake` no more than once per hour.  The `rake` task loads the automation from the configuration and then `call`s it, passing a `time: Time.now` parameter (plus any other parameters you may need).  If the current time matches the trigger's configuration it will `call` the actions.
+
+```ruby
+config= {
+  name: "Weekdays at 8am",
+  class_name: "Automations::DailySchedule",
+  configuration: { days: [1,2,3,4,5], times: [8] },
+  actions: [{...}]
+}
+```
 
 ## Development
 
